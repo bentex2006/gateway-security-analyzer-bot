@@ -79,10 +79,9 @@ class Config:
         "Permissions-Policy"
     ]
     
-    # Cloudflare indicators
+    # Cloudflare indicators - specific headers only
     CLOUDFLARE_HEADERS = [
         "cf-ray",
         "cf-cache-status",
-        "cf-request-id",
-        "server"
+        "cf-request-id"
     ]

@@ -18,11 +18,11 @@ args = "Install Dependencies"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "install_and_run"
+args = "Run Bot"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Run Bot"
+args = "Bot Testing"
 
 [[workflows.workflow]]
 name = "Install Dependencies"
@@ -33,15 +33,15 @@ task = "shell.exec"
 args = "uv add python-telegram-bot requests beautifulsoup4 lxml"
 
 [[workflows.workflow]]
-name = "install_and_run"
+name = "Run Bot"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "uv add python-telegram-bot requests beautifulsoup4 && python main.py"
+args = "python main.py"
 
 [[workflows.workflow]]
-name = "Run Bot"
+name = "Bot Testing"
 author = "agent"
 
 [[workflows.workflow.tasks]]

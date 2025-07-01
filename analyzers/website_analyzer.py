@@ -61,13 +61,14 @@ class WebsiteAnalyzer:
         cloudflare_detected = False
         evidence = []
         
-        # Check headers
-        for header in self.config.CLOUDFLARE_HEADERS:
+        # Check Cloudflare-specific headers (excluding generic 'server')
+        cloudflare_specific_headers = ['cf-ray', 'cf-cache-status', 'cf-request-id']
+        for header in cloudflare_specific_headers:
             if header.lower() in [h.lower() for h in response.headers.keys()]:
                 cloudflare_detected = True
                 evidence.append(f"Header: {header}")
         
-        # Check server header specifically
+        # Check server header specifically for Cloudflare
         server_header = response.headers.get('Server', '').lower()
         if 'cloudflare' in server_header:
             cloudflare_detected = True
@@ -78,6 +79,13 @@ class WebsiteAnalyzer:
             if cookie.name.startswith('__cf') or 'cloudflare' in cookie.name.lower():
                 cloudflare_detected = True
                 evidence.append(f"Cookie: {cookie.name}")
+        
+        # Check for Cloudflare challenge pages in content
+        if hasattr(response, 'text'):
+            content_lower = response.text.lower()
+            if 'cloudflare' in content_lower and ('challenge' in content_lower or 'checking your browser' in content_lower):
+                cloudflare_detected = True
+                evidence.append("Challenge page detected")
         
         return {
             'detected': cloudflare_detected,
@@ -137,20 +145,7 @@ class WebsiteAnalyzer:
             try:
                 test_url = base_url.rstrip('/') + path
                 
-                # Try GET request first
-                response = self.session.get(
-                    test_url,
-                    timeout=self.config.REQUEST_TIMEOUT
-                )
-                
-                if response.status_code != 404:
-                    # Check if response contains GraphQL-related content
-                    content = response.text.lower()
-                    if any(keyword in content for keyword in ['graphql', 'query', 'mutation', 'subscription']):
-                        graphql_endpoints.append(test_url)
-                        continue
-                
-                # Try POST request with GraphQL introspection query
+                # Try POST request with GraphQL introspection query first (more reliable)
                 introspection_query = {
                     "query": "{ __schema { types { name } } }"
                 }
@@ -164,10 +159,39 @@ class WebsiteAnalyzer:
                 if response.status_code == 200:
                     try:
                         json_response = response.json()
-                        if 'data' in json_response or 'errors' in json_response:
+                        # Look for actual GraphQL response structure
+                        if ('data' in json_response and '__schema' in str(json_response)) or \
+                           ('errors' in json_response and any('graphql' in str(error).lower() for error in json_response.get('errors', []))):
                             graphql_endpoints.append(test_url)
+                            continue
                     except:
                         pass
+                
+                # Try GET request for GraphQL endpoint detection
+                response = self.session.get(
+                    test_url,
+                    timeout=self.config.REQUEST_TIMEOUT
+                )
+                
+                # Only consider it GraphQL if we get specific GraphQL responses
+                if response.status_code == 200:
+                    content_type = response.headers.get('content-type', '').lower()
+                    content = response.text.lower()
+                    
+                    # Look for specific GraphQL indicators, not just the word "query"
+                    graphql_indicators = [
+                        'graphql playground',
+                        'graphql endpoint',
+                        '"graphql"',
+                        'query introspection',
+                        '__schema',
+                        'graphql-ws',
+                        'application/graphql'
+                    ]
+                    
+                    if any(indicator in content for indicator in graphql_indicators) or \
+                       'application/graphql' in content_type:
+                        graphql_endpoints.append(test_url)
                         
             except:
                 continue
