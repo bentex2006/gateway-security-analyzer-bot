@@ -55,17 +55,17 @@ class Config:
         "wp-json"
     ]
     
-    # Payment system indicators
+    # Payment system indicators - more specific to avoid false positives
     PAYMENT_INDICATORS = {
-        "stripe": ["stripe", "js.stripe.com"],
-        "paypal": ["paypal", "paypalobjects.com"],
-        "square": ["square", "squareup.com"],
-        "braintree": ["braintree", "js.braintreegateway.com"],
-        "authorize.net": ["authorize.net", "authorizenet"],
-        "razorpay": ["razorpay", "checkout.razorpay.com"],
-        "coinbase": ["coinbase", "coinbase.com"],
-        "bitcoin": ["bitcoin", "btc"],
-        "cryptocurrency": ["crypto", "bitcoin", "ethereum", "litecoin"]
+        "stripe": ["js.stripe.com", "stripe.js", "stripe-js", "pk_live_", "pk_test_"],
+        "paypal": ["paypalobjects.com", "paypal.js", "paypal-js", "paypal-checkout", "paypal.com/sdk"],
+        "square": ["squareup.com", "square.js", "sandbox-square", "connect.squareup.com", "js.squareup.com"],
+        "braintree": ["js.braintreegateway.com", "braintree.js", "braintree-web"],
+        "authorize.net": ["authorize.net", "authorizenet", "accept.js"],
+        "razorpay": ["checkout.razorpay.com", "razorpay.js"],
+        "coinbase": ["coinbase.com/api", "coinbase-commerce"],
+        "bitcoin": ["bitcoin:", "btc:", "bitcoin-address"],
+        "cryptocurrency": ["web3.js", "metamask", "ethereum:", "crypto-payment"]
     }
     
     # Security headers to check
