@@ -35,40 +35,18 @@ class PaymentAnalyzer:
             detected_payments = {}
             payment_evidence = []
             
-            # Check for payment indicators
-            for payment_system, indicators in self.config.PAYMENT_INDICATORS.items():
-                system_detected = False
-                system_evidence = []
-                
-                for indicator in indicators:
-                    if indicator.lower() in html_content:
-                        system_detected = True
-                        system_evidence.append(f"Content: {indicator}")
-                
-                # Check script sources
-                scripts = soup.find_all('script', src=True)
-                for script in scripts:
-                    src = script.get('src', '').lower()
-                    for indicator in indicators:
-                        if indicator.lower() in src:
-                            system_detected = True
-                            system_evidence.append(f"Script: {src}")
-                
-                # Check form actions
-                forms = soup.find_all('form', action=True)
-                for form in forms:
-                    action = form.get('action', '').lower()
-                    for indicator in indicators:
-                        if indicator.lower() in action:
-                            system_detected = True
-                            system_evidence.append(f"Form action: {action}")
-                
-                if system_detected:
-                    detected_payments[payment_system] = {
+            # Check for payment gateways using regex patterns (like the reference script)
+            import re
+            detected_gateways = []
+            
+            for gateway, pattern in self.config.PAYMENT_GATEWAY_PATTERNS.items():
+                if re.search(pattern, html_content, re.IGNORECASE):
+                    detected_gateways.append(gateway)
+                    detected_payments[gateway.lower()] = {
                         'detected': True,
-                        'evidence': system_evidence
+                        'evidence': [f"Pattern match: {pattern}"]
                     }
-                    payment_evidence.extend(system_evidence)
+                    payment_evidence.append(f"Gateway detected: {gateway}")
             
             # Look for general e-commerce indicators
             ecommerce_indicators = self._detect_ecommerce_features(soup, html_content)

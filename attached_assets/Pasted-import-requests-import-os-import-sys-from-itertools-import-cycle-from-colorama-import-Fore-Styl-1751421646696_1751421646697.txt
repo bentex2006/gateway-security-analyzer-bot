@@ -1,0 +1,217 @@
+import requests
+import os
+import sys
+from itertools import cycle
+from colorama import Fore, Style, init
+import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+init(autoreset=True)
+
+TELEGRAM_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
+TELEGRAM_USER_ID = "YOUR_TELEGRAM_USER_ID"
+
+BANNER = f"""
+{Fore.MAGENTA}
+███╗   ███╗██████╗     ████████╗██████╗  ██████╗ ██╗     ██╗     
+████╗ ████║██╔══██╗    ╚══██╔══╝██╔══██╗██╔═══██╗██║     ██║     
+██╔████╔██║██████╔╝       ██║   ██████╔╝██║   ██║██║     ██║     
+██║╚██╔╝██║██╔══██╗       ██║   ██╔══██╗██║   ██║██║     ██║     
+██║ ╚═╝ ██║██║  ██║       ██║   ██║  ██║╚██████╔╝███████╗███████╗
+╚═╝     ╚═╝╚═╝  ╚═╝       ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝
+{Style.RESET_ALL}
+{Fore.CYAN}{'t.me/troll_sec'.center(80)}{Style.RESET_ALL}
+"""
+
+def parse_proxy(proxy_str):
+    """Parse proxy string into dictionary format"""
+    if proxy_str.count(':') == 3:
+        ip, port, user, password = proxy_str.split(':')
+        return {
+            'http': f'http://{user}:{password}@{ip}:{port}',
+            'https': f'http://{user}:{password}@{ip}:{port}'
+        }
+    elif proxy_str.count(':') == 1:
+        ip, port = proxy_str.split(':')
+        return {
+            'http': f'http://{ip}:{port}',
+            'https': f'http://{ip}:{port}'
+        }
+    return None
+
+def load_proxies():
+    """Load proxies from proxy.txt file"""
+    proxies = []
+    if os.path.exists("proxy.txt"):
+        with open("proxy.txt", "r") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    proxy = parse_proxy(line)
+                    if proxy:
+                        proxies.append(proxy)
+    return proxies
+
+def send_to_telegram(result):
+    """Send results to Telegram with interactive button"""
+    if 'error' in result:
+        message = f"❌ *Site Error*\n\n" \
+                  f"• Site: `{result['site']}`\n" \
+                  f"• Error: `{result['error']}`"
+    else:
+        gateways = ', '.join(result['gateways']) if result['gateways'] else 'None'
+        message = f"🌐 *Site Analysis*\n\n" \
+                  f"• Site: `{result['site']}`\n" \
+                  f"• Gateways: `{gateways}`\n" \
+                  f"• Captcha: `{result['captcha']}`\n" \
+                  f"• Cloudflare: `{result['cloudflare']}`"
+    
+    keyboard = {
+        "inline_keyboard": [[{
+            "text": "𝗠𝗿 𝗧𝗿𝗼𝗹𝗹",
+            "url": "https://t.me/troll_sec"
+        }]]
+    }
+    
+    payload = {
+        "chat_id": TELEGRAM_USER_ID,
+        "text": message,
+        "parse_mode": "Markdown",
+        "reply_markup": keyboard
+    }
+    
+    try:
+        response = requests.post(
+            f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
+            json=payload
+        )
+        response.raise_for_status()
+    except Exception as e:
+        print(f"{Fore.RED}Telegram Error: {e}{Style.RESET_ALL}")
+
+def check_gateway(site, proxy=None):
+    """Check payment gateways and security features for a site"""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+    }
+    
+    if not site.startswith(('http://', 'https://')):
+        site = 'https://' + site
+    
+    try:
+        response = requests.get(
+            site,
+            headers=headers,
+            proxies=proxy,
+            timeout=15,
+            allow_redirects=True
+        )
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        return {
+            "site": site,
+            "error": str(e)
+        }
+    
+    html_content = response.text.lower()
+    
+    gateway_patterns = {
+        "PayPal": r"paypal\.com|paypalobjects",
+        "Stripe": r"stripe\.com|stripejs|stripe-api",
+        "Braintree": r"braintreegateway\.com|braintree",
+        "Square": r"square\.com|squareup\.com",
+        "Authorize.net": r"authorize\.net|anet",
+        "2Checkout": r"2checkout\.com|avangate",
+        "Adyen": r"adyen\.com",
+        "Worldpay": r"worldpay\.com",
+        "SagePay": r"sagepay\.com",
+        "Razorpay": r"razorpay\.com",
+        "Klarna": r"klarna\.com",
+        "Amazon Pay": r"pay\.amazon\.com",
+        "WePay": r"wepay\.com",
+        "PayU": r"payu\.in|payu\.com"
+    }
+    
+    detected_gateways = []
+    for gateway, pattern in gateway_patterns.items():
+        if re.search(pattern, html_content, re.IGNORECASE):
+            detected_gateways.append(gateway)
+    
+    captcha = any((
+        'captcha' in html_content,
+        'recaptcha' in html_content,
+        'cloudflare' in html_content and 'challenge' in html_content,
+        'hcaptcha' in html_content
+    ))
+    
+    cloudflare = any((
+        'cloudflare' in html_content,
+        'cf-browser-verification' in html_content,
+        '__cfduid' in response.cookies
+    ))
+    
+    return {
+        "site": site,
+        "gateways": detected_gateways,
+        "captcha": "Yes" if captcha else "No",
+        "cloudflare": "Yes" if cloudflare else "No"
+    }
+
+def process_site(site, proxy=None):
+    """Process a single site and return formatted result"""
+    result = check_gateway(site, proxy)
+    
+    if 'error' in result:
+        status = f"{Fore.RED}❌ Failed: {result['error']}{Style.RESET_ALL}"
+        return f"{site} | {status}"
+    
+    gateways = ', '.join(result['gateways']) if result['gateways'] else 'None'
+    status = f"{Fore.GREEN}✓ Gateways: {gateways}{Style.RESET_ALL}"
+    return f"{site} | {status}"
+
+def main():
+    """Main function to run the script"""
+    print(BANNER)
+    
+    proxies = load_proxies()
+    proxy_cycle = cycle(proxies) if proxies else None
+    print(f"{Fore.YELLOW}Loaded {len(proxies)} proxies{Style.RESET_ALL}" if proxies else 
+          f"{Fore.YELLOW}No proxies loaded - using direct connections{Style.RESET_ALL}")
+    
+    file_path = input(f"{Fore.CYAN}Enter path to websites file: {Style.RESET_ALL}").strip()
+    if not os.path.exists(file_path):
+        print(f"{Fore.RED}File not found!{Style.RESET_ALL}")
+        sys.exit(1)
+    
+    with open(file_path, "r") as f:
+        sites = [line.strip() for line in f.readlines() if line.strip()]
+    
+    total = len(sites)
+    print(f"{Fore.CYAN}Loaded {total} sites for scanning{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'='*50}{Style.RESET_ALL}")
+    
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        futures = []
+        for i, site in enumerate(sites):
+            proxy = next(proxy_cycle) if proxy_cycle else None
+            futures.append(executor.submit(process_site, site, proxy))
+        
+        for i, future in enumerate(as_completed(futures)):
+            result = future.result()
+            print(f"[{i+1}/{total}] {result}")
+            
+            if TELEGRAM_TOKEN and TELEGRAM_USER_ID:
+                processed_site = result.split(' | ')[0]
+                site_result = check_gateway(processed_site)
+                send_to_telegram(site_result)
+    
+    print(f"{Fore.CYAN}{'='*50}{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}Scan completed! Results sent to Telegram{Style.RESET_ALL}")
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print(f"\n{Fore.RED}Scan interrupted by user!{Style.RESET_ALL}")
+        sys.exit(0)

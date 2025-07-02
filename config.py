@@ -55,17 +55,22 @@ class Config:
         "wp-json"
     ]
     
-    # Payment system indicators - more specific to avoid false positives
-    PAYMENT_INDICATORS = {
-        "stripe": ["js.stripe.com", "stripe.js", "stripe-js", "pk_live_", "pk_test_"],
-        "paypal": ["paypalobjects.com", "paypal.js", "paypal-js", "paypal-checkout", "paypal.com/sdk"],
-        "square": ["squareup.com", "square.js", "sandbox-square", "connect.squareup.com", "js.squareup.com"],
-        "braintree": ["js.braintreegateway.com", "braintree.js", "braintree-web"],
-        "authorize.net": ["authorize.net", "authorizenet", "accept.js"],
-        "razorpay": ["checkout.razorpay.com", "razorpay.js"],
-        "coinbase": ["coinbase.com/api", "coinbase-commerce"],
-        "bitcoin": ["bitcoin:", "btc:", "bitcoin-address"],
-        "cryptocurrency": ["web3.js", "metamask", "ethereum:", "crypto-payment"]
+    # Payment gateway patterns (regex-based like the reference script)
+    PAYMENT_GATEWAY_PATTERNS = {
+        "PayPal": r"paypal\.com|paypalobjects",
+        "Stripe": r"stripe\.com|stripejs|stripe-api",
+        "Braintree": r"braintreegateway\.com|braintree",
+        "Square": r"square\.com|squareup\.com",
+        "Authorize.net": r"authorize\.net|anet",
+        "2Checkout": r"2checkout\.com|avangate", 
+        "Adyen": r"adyen\.com",
+        "Worldpay": r"worldpay\.com",
+        "SagePay": r"sagepay\.com",
+        "Razorpay": r"razorpay\.com",
+        "Klarna": r"klarna\.com",
+        "Amazon Pay": r"pay\.amazon\.com",
+        "WePay": r"wepay\.com",
+        "PayU": r"payu\.in|payu\.com"
     }
     
     # Security headers to check
