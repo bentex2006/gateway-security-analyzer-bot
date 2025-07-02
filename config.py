@@ -55,20 +55,20 @@ class Config:
         "wp-json"
     ]
     
-    # Payment gateway patterns (regex-based like the reference script)
+    # Payment gateway patterns (improved to catch more real implementations)
     PAYMENT_GATEWAY_PATTERNS = {
-        "PayPal": r"paypal\.com|paypalobjects",
-        "Stripe": r"stripe\.com|stripejs|stripe-api",
-        "Braintree": r"braintreegateway\.com|braintree",
-        "Square": r"square\.com|squareup\.com",
-        "Authorize.net": r"authorize\.net|anet",
+        "PayPal": r"paypal\.com|paypalobjects|paypal\.js|paypal-checkout",
+        "Stripe": r"stripe\.com|stripejs|stripe-api|js\.stripe\.com|pk_live_|pk_test_|stripe\.js",
+        "Braintree": r"braintreegateway\.com|braintree\.js|braintree-web",
+        "Square": r"squareup\.com|square\.js|connect\.squareup\.com|js\.squareup\.com",
+        "Authorize.net": r"authorize\.net|authorizenet|accept\.js",
         "2Checkout": r"2checkout\.com|avangate", 
-        "Adyen": r"adyen\.com",
+        "Adyen": r"adyen\.com|adyen\.js",
         "Worldpay": r"worldpay\.com",
         "SagePay": r"sagepay\.com",
-        "Razorpay": r"razorpay\.com",
-        "Klarna": r"klarna\.com",
-        "Amazon Pay": r"pay\.amazon\.com",
+        "Razorpay": r"razorpay\.com|checkout\.razorpay\.com",
+        "Klarna": r"klarna\.com|klarna\.js",
+        "Amazon Pay": r"pay\.amazon\.com|amazon-payments",
         "WePay": r"wepay\.com",
         "PayU": r"payu\.in|payu\.com"
     }

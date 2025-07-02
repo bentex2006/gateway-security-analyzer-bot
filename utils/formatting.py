@@ -32,9 +32,9 @@ class MessageFormatter:
         security_cloudflare = "✅ Protected" if website_data.get('cloudflare', {}).get('detected') else "❌ Unprotected"
         graphql_detected = "✅ Available" if website_data.get('graphql', {}).get('detected') else "❌ Not Found"
         
-        # SSL details
-        ssl_issuer = ssl_data.get('issuer', 'Unknown')
-        ssl_subject = ssl_data.get('subject', 'Unknown')
+        # SSL details (escape special characters for Telegram)
+        ssl_issuer = MessageFormatter._escape_markdown(ssl_data.get('issuer', 'Unknown'))
+        ssl_subject = MessageFormatter._escape_markdown(ssl_data.get('subject', 'Unknown'))
         ssl_valid = "✅ Valid" if ssl_data.get('valid') else "❌ Invalid"
         
         # Platform details
@@ -194,3 +194,21 @@ Developed by **Skittle** | Credits to **SigmaX**"""
         status = "enabled" if enabled else "disabled"
         emoji = "✅" if enabled else "❌"
         return f"{emoji} Group usage has been {status}."
+    
+    @staticmethod
+    def _escape_markdown(text: str) -> str:
+        """Escape special characters that might break Telegram message parsing"""
+        if not text or text == "Unknown":
+            return text
+        
+        # Remove or replace characters that commonly cause Telegram parsing issues
+        special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+        
+        for char in special_chars:
+            text = text.replace(char, '')
+        
+        # Limit length to avoid overly long SSL certificate names
+        if len(text) > 50:
+            text = text[:47] + "..."
+            
+        return text
