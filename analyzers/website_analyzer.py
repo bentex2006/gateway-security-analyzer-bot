@@ -1,7 +1,3 @@
-"""
-Website analysis module for detecting technologies and platforms
-"""
-
 import re
 import requests
 from bs4 import BeautifulSoup
@@ -11,7 +7,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 class WebsiteAnalyzer:
-    """Analyzes websites for technology stack and platform detection"""
     
     def __init__(self, config):
         self.config = config

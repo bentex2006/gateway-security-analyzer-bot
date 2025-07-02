@@ -1,7 +1,3 @@
-"""
-URL analysis handler for the Telegram bot
-"""
-
 import asyncio
 import time
 import logging

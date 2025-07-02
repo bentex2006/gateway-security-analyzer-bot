@@ -1,13 +1,8 @@
-"""
-Simple in-memory database for user approvals and group settings
-"""
-
 import json
 import os
 from typing import Set, Dict
 
 class Database:
-    """Simple file-based database for storing user approvals and group settings"""
     
     def __init__(self, db_file: str = "bot_data.json"):
         self.db_file = db_file

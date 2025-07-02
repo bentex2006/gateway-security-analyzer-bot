@@ -25,7 +25,6 @@ class GatewayBot:
         self.url_handler = URLHandler(self.db, self.config)
         
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Handle /start command"""
         user = update.effective_user
         chat = update.effective_chat
         

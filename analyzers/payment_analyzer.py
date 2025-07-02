@@ -1,7 +1,3 @@
-"""
-Payment system detection module
-"""
-
 import requests
 from bs4 import BeautifulSoup
 from typing import Dict, List, Any
@@ -11,7 +7,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 class PaymentAnalyzer:
-    """Analyzes websites for payment systems and gateways"""
     
     def __init__(self, config):
         self.config = config
@@ -21,7 +16,6 @@ class PaymentAnalyzer:
         })
     
     def detect_payment_systems(self, url: str) -> Dict[str, Any]:
-        """Detect payment systems and gateways"""
         try:
             response = self.session.get(
                 url,

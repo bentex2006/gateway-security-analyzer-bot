@@ -1,7 +1,3 @@
-"""
-SSL certificate analysis module
-"""
-
 import ssl
 import socket
 from urllib.parse import urlparse
@@ -11,7 +7,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 class SSLAnalyzer:
-    """Analyzes SSL certificates and configurations"""
     
     def __init__(self, config):
         self.config = config

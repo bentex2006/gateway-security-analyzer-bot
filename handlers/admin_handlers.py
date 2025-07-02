@@ -1,7 +1,3 @@
-"""
-Admin command handlers for the Telegram bot
-"""
-
 import logging
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -12,18 +8,15 @@ from utils.formatting import MessageFormatter
 logger = logging.getLogger(__name__)
 
 class AdminHandlers:
-    """Handles admin-only commands"""
     
     def __init__(self, database, config):
         self.db = database
         self.config = config
     
     def is_admin(self, user_id: int) -> bool:
-        """Check if user is an admin"""
         return user_id in self.config.ADMIN_IDS
     
     async def approve_user(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Handle /approve command"""
         user = update.effective_user
         
         # Check if user is admin

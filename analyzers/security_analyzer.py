@@ -1,7 +1,3 @@
-"""
-Security analysis module for checking security headers and configurations
-"""
-
 import requests
 from typing import Dict, List, Any
 import logging
@@ -9,7 +5,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 class SecurityAnalyzer:
-    """Analyzes websites for security headers and configurations"""
     
     def __init__(self, config):
         self.config = config

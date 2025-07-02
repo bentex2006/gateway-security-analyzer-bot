@@ -1,11 +1,6 @@
-"""
-Configuration settings for the Gateway Bot
-"""
-
 import os
 
 class Config:
-    """Configuration class for bot settings"""
     
     # Bot token from environment or hardcoded fallback
     BOT_TOKEN = os.getenv("BOT_TOKEN", "7993523214:AAE9n49ZyssohfTf70WRrvov9f-pZQ0166Y")
