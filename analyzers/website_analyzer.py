@@ -228,29 +228,34 @@ class WebsiteAnalyzer:
         """Detect WordPress"""
         wordpress_evidence = []
         
-        # Check for WordPress-specific content
-        for indicator in self.config.WORDPRESS_INDICATORS:
-            if indicator in html_content.lower():
-                wordpress_evidence.append(f"Content: {indicator}")
-        
-        # Check meta tags
+        # Check meta generator (most reliable)
         meta_generator = soup.find('meta', {'name': 'generator'})
         if meta_generator and 'wordpress' in meta_generator.get('content', '').lower():
             wordpress_evidence.append("Meta generator: WordPress")
         
-        # Check for wp-json in links
+        # Check for wp-json API endpoint (very reliable)
         links = soup.find_all('link', href=True)
         for link in links:
             href = link.get('href', '')
-            if 'wp-json' in href:
-                wordpress_evidence.append(f"WP-JSON API: {href}")
+            if 'wp-json' in href or 'wp/v2' in href:
+                wordpress_evidence.append("WP-JSON API detected")
+                break
         
-        # Check for WordPress-specific CSS/JS files
+        # Check for WordPress-specific CSS/JS files (reliable)
         scripts_and_links = soup.find_all(['script', 'link'], src=True) + soup.find_all(['script', 'link'], href=True)
         for element in scripts_and_links:
             src = element.get('src', '') or element.get('href', '')
-            if any(wp_indicator in src.lower() for wp_indicator in ['wp-content', 'wp-includes']):
-                wordpress_evidence.append(f"WordPress asset: {src}")
+            if '/wp-content/' in src or '/wp-includes/' in src:
+                wordpress_evidence.append("WordPress assets detected")
+                break
+        
+        # Check for very specific WordPress indicators only if we don't have other evidence
+        if not wordpress_evidence:
+            specific_indicators = ['wp-admin', 'wp-login.php', 'xmlrpc.php']
+            for indicator in specific_indicators:
+                if f'/{indicator}' in html_content or f'"{indicator}"' in html_content:
+                    wordpress_evidence.append(f"WordPress indicator: {indicator}")
+                    break
         
         return {
             'detected': len(wordpress_evidence) > 0,
@@ -261,29 +266,35 @@ class WebsiteAnalyzer:
         """Detect WooCommerce"""
         woocommerce_evidence = []
         
-        # Check for WooCommerce-specific content
-        if 'woocommerce' in html_content.lower():
-            woocommerce_evidence.append("Content: woocommerce")
-        
-        # Check for WooCommerce CSS classes
-        woo_classes = ['woocommerce', 'wc-', 'cart-', 'checkout-', 'product-']
-        for element in soup.find_all(class_=True):
-            classes = ' '.join(element.get('class', [])).lower()
-            for woo_class in woo_classes:
-                if woo_class in classes:
-                    woocommerce_evidence.append(f"CSS class: {woo_class}")
-                    break
-        
-        # Check for WooCommerce scripts
+        # Check for WooCommerce scripts (most reliable)
         scripts = soup.find_all('script', src=True)
         for script in scripts:
-            src = script.get('src', '').lower()
-            if 'woocommerce' in src or 'wc-' in src:
-                woocommerce_evidence.append(f"Script: {src}")
+            src = script.get('src', '') or ''
+            if 'woocommerce' in src.lower() or '/wc-' in src.lower():
+                woocommerce_evidence.append("WooCommerce scripts detected")
+                break
+        
+        # Check for specific WooCommerce CSS classes (reliable)
+        woo_classes = ['woocommerce-page', 'woocommerce-cart', 'woocommerce-checkout', 'wc-checkout']
+        for element in soup.find_all(class_=True):
+            classes = element.get('class', [])
+            if isinstance(classes, list):
+                classes_str = ' '.join(classes).lower()
+                for woo_class in woo_classes:
+                    if woo_class in classes_str:
+                        woocommerce_evidence.append("WooCommerce CSS classes detected")
+                        break
+                if woocommerce_evidence:
+                    break
+        
+        # Check for WooCommerce meta or very specific content only if no other evidence
+        if not woocommerce_evidence:
+            if 'woocommerce' in html_content.lower() and ('add-to-cart' in html_content.lower() or 'shop-' in html_content.lower()):
+                woocommerce_evidence.append("WooCommerce shop detected")
         
         return {
             'detected': len(woocommerce_evidence) > 0,
-            'evidence': list(set(woocommerce_evidence))
+            'evidence': woocommerce_evidence
         }
     
     def _detect_cms(self, soup: BeautifulSoup, html_content: str) -> Dict[str, str]:

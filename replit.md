@@ -97,6 +97,12 @@ Changelog:
   * Security headers upgrade: Added 6 modern headers (Cross-Origin policies, Expect-CT)
   * CDN detection enhancement: Added AWS CloudFront, Cloudflare APO headers
   * WAF detection: Added Sucuri, Akamai, FireEye, StackPath and 4 more WAF indicators
+- July 02, 2025: Major accuracy improvements to eliminate false positives across all detection systems:
+  * CAPTCHA detection: Implemented smart grouping to show only actual systems (not duplicates)
+  * WordPress detection: Now prioritizes meta generator, WP-JSON API, and asset detection
+  * WooCommerce detection: Focuses on scripts and specific CSS classes for accuracy
+  * Payment gateway detection: Enhanced with script/form checking and FontAwesome exclusion
+  * All detections now show only existing systems rather than every possible match
 ```
 
 ## User Preferences

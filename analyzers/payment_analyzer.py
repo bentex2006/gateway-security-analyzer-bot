@@ -30,23 +30,54 @@ class PaymentAnalyzer:
             )
             
             soup = BeautifulSoup(response.text, 'html.parser')
-            html_content = response.text.lower()
+            html_content = response.text
             
             detected_payments = {}
             payment_evidence = []
             
-            # Check for payment gateways using regex patterns (like the reference script)
+            # Check for payment gateways using improved detection
             import re
-            detected_gateways = []
+            detected_gateways = set()
             
-            for gateway, pattern in self.config.PAYMENT_GATEWAY_PATTERNS.items():
-                if re.search(pattern, html_content, re.IGNORECASE):
-                    detected_gateways.append(gateway)
-                    detected_payments[gateway.lower()] = {
-                        'detected': True,
-                        'evidence': [f"Pattern match: {pattern}"]
-                    }
-                    payment_evidence.append(f"Gateway detected: {gateway}")
+            # Check scripts first (most reliable)
+            scripts = soup.find_all('script', src=True)
+            for script in scripts:
+                src = script.get('src', '') or ''
+                for gateway, pattern in self.config.PAYMENT_GATEWAY_PATTERNS.items():
+                    if re.search(pattern, src, re.IGNORECASE):
+                        detected_gateways.add(gateway)
+                        payment_evidence.append(f"Script: {gateway}")
+                        break
+            
+            # Check inline scripts for payment initialization
+            inline_scripts = soup.find_all('script', src=False)
+            for script in inline_scripts:
+                script_content = script.get_text() if script.get_text() else ''
+                for gateway, pattern in self.config.PAYMENT_GATEWAY_PATTERNS.items():
+                    # More specific matching for inline scripts
+                    if re.search(pattern, script_content, re.IGNORECASE):
+                        # Avoid CSS/FontAwesome false positives 
+                        if not any(term in script_content.lower() for term in ['font-awesome', 'fas fa-', 'far fa-', 'fab fa-']):
+                            detected_gateways.add(gateway)
+                            payment_evidence.append(f"Inline script: {gateway}")
+                            break
+            
+            # Check forms and form actions (reliable for payment processors)
+            forms = soup.find_all('form', action=True)
+            for form in forms:
+                action = form.get('action', '') or ''
+                for gateway, pattern in self.config.PAYMENT_GATEWAY_PATTERNS.items():
+                    if re.search(pattern, action, re.IGNORECASE):
+                        detected_gateways.add(gateway)
+                        payment_evidence.append(f"Form action: {gateway}")
+                        break
+            
+            # Create payment systems dict
+            for gateway in detected_gateways:
+                detected_payments[gateway.lower()] = {
+                    'detected': True,
+                    'evidence': [f"Gateway: {gateway}"]
+                }
             
             # Look for general e-commerce indicators
             ecommerce_indicators = self._detect_ecommerce_features(soup, html_content)
