@@ -94,46 +94,69 @@ class WebsiteAnalyzer:
     
     def _detect_captcha(self, soup: BeautifulSoup, html_content: str) -> Dict[str, Any]:
         """Detect CAPTCHA systems"""
-        captcha_types = []
+        detected_captchas = set()
         evidence = []
         
-        # Check for common CAPTCHA scripts and elements
-        for indicator in self.config.CAPTCHA_INDICATORS:
-            if indicator.lower() in html_content.lower():
-                captcha_types.append(indicator)
-                evidence.append(f"Content: {indicator}")
+        # Define CAPTCHA system priorities to avoid conflicts
+        captcha_systems = {
+            'recaptcha': ['recaptcha', 'g-recaptcha'],
+            'hcaptcha': ['hcaptcha', 'h-captcha'],
+            'turnstile': ['cf-turnstile', 'turnstile'],
+            'geetest': ['geetest'],
+            'arkose': ['arkose', 'arkose-labs', 'funcaptcha'],
+            'datadome': ['datadome'],
+            'perimeterx': ['perimeterx'],
+            'captcha': ['captcha-id']  # Generic captcha as last resort
+        }
         
-        # Check script sources
+        # Check script sources first (most reliable)
         scripts = soup.find_all('script', src=True)
         for script in scripts:
             src = script.get('src', '').lower()
-            for indicator in self.config.CAPTCHA_INDICATORS:
-                if indicator in src:
-                    captcha_types.append(indicator)
-                    evidence.append(f"Script: {src}")
+            for system, indicators in captcha_systems.items():
+                for indicator in indicators:
+                    if indicator in src:
+                        detected_captchas.add(system.title())
+                        evidence.append(f"Script: {indicator} in {src[:50]}...")
+                        break
         
         # Check for iframe sources (common for CAPTCHAs)
         iframes = soup.find_all('iframe', src=True)
         for iframe in iframes:
             src = iframe.get('src', '').lower()
-            for indicator in self.config.CAPTCHA_INDICATORS:
-                if indicator in src:
-                    captcha_types.append(indicator)
-                    evidence.append(f"Iframe: {src}")
+            for system, indicators in captcha_systems.items():
+                for indicator in indicators:
+                    if indicator in src:
+                        detected_captchas.add(system.title())
+                        evidence.append(f"Iframe: {indicator}")
+                        break
         
         # Check for div classes and IDs
         divs = soup.find_all('div', {'class': True}) + soup.find_all('div', {'id': True})
         for div in divs:
-            classes = ' '.join(div.get('class', [])).lower()
-            div_id = div.get('id', '').lower()
-            for indicator in self.config.CAPTCHA_INDICATORS:
-                if indicator in classes or indicator in div_id:
-                    captcha_types.append(indicator)
-                    evidence.append(f"Element: {indicator}")
+            classes = ' '.join(div.get('class', [])).lower() if div.get('class') else ''
+            div_id = div.get('id', '').lower() if div.get('id') else ''
+            for system, indicators in captcha_systems.items():
+                for indicator in indicators:
+                    if indicator in classes or indicator in div_id:
+                        detected_captchas.add(system.title())
+                        evidence.append(f"Element: {indicator}")
+                        break
+        
+        # Only check content as last resort and be more specific
+        if not detected_captchas:
+            content_lower = html_content.lower()
+            for system, indicators in captcha_systems.items():
+                for indicator in indicators:
+                    # Be more strict about content matches to avoid false positives
+                    if f'"{indicator}"' in content_lower or f"'{indicator}'" in content_lower or f'/{indicator}/' in content_lower:
+                        detected_captchas.add(system.title())
+                        evidence.append(f"Content: {indicator}")
+                        break
         
         return {
-            'detected': len(captcha_types) > 0,
-            'types': list(set(captcha_types)),
+            'detected': len(detected_captchas) > 0,
+            'types': list(detected_captchas),
             'evidence': list(set(evidence))
         }
     
