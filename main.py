@@ -1,8 +1,3 @@
-"""
-Telegram Bot for Website Security and Technology Analysis
-Developed by Skittle, Credits to SigmaX
-"""
-
 import asyncio
 import logging
 import os
@@ -38,8 +33,8 @@ class GatewayBot:
         await context.bot.send_animation(
             chat_id=chat.id,
             animation=self.config.START_GIF,
-            caption="🔍 **Gateway Security Analyzer Bot**\n\n"
-                   "Welcome to the advanced website security and technology detection bot!\n\n"
+            caption=" **Gateway Analyzer Bot**\n\n"
+                   "website security and technology detection bot!\n\n"
                    "**Commands:**\n"
                    "• `/url <website>` - Analyze a website\n"
                    "• `/approve <user_id>` - Approve user (Admin only)\n"
@@ -54,7 +49,7 @@ class GatewayBot:
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /help command"""
         help_text = """
-🔍 **Gateway Security Analyzer Bot**
+ **Gateway Analyzer Bot**
 
 **Available Commands:**
 • `/start` - Start the bot
