@@ -13,6 +13,7 @@ class Database:
         self.db_file = db_file
         self.approved_users: Set[int] = set()
         self.group_settings: Dict[int, bool] = {}  # chat_id -> group_usage_enabled
+        self.auth_required: bool = True  # Whether user approval is required
         self.load_data()
     
     def load_data(self):
@@ -23,6 +24,7 @@ class Database:
                     data = json.load(f)
                     self.approved_users = set(data.get('approved_users', []))
                     self.group_settings = {int(k): v for k, v in data.get('group_settings', {}).items()}
+                    self.auth_required = data.get('auth_required', True)
         except Exception as e:
             print(f"Error loading database: {e}")
     
@@ -31,7 +33,8 @@ class Database:
         try:
             data = {
                 'approved_users': list(self.approved_users),
-                'group_settings': {str(k): v for k, v in self.group_settings.items()}
+                'group_settings': {str(k): v for k, v in self.group_settings.items()},
+                'auth_required': self.auth_required
             }
             with open(self.db_file, 'w') as f:
                 json.dump(data, f, indent=2)
@@ -64,3 +67,12 @@ class Database:
     def get_approved_users_count(self) -> int:
         """Get count of approved users"""
         return len(self.approved_users)
+    
+    def set_auth_required(self, required: bool):
+        """Set whether user approval is required"""
+        self.auth_required = required
+        self.save_data()
+    
+    def is_auth_required(self) -> bool:
+        """Check if user approval is required"""
+        return self.auth_required

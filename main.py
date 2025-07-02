@@ -57,6 +57,7 @@ class GatewayBot:
 • `/url <website>` - Analyze website security and technology
 • `/approve <user_id>` - Approve user to use bot (Admin only)
 • `/groupuse <on/off>` - Enable/disable group usage (Admin only)
+• `/auth <on/off>` - Toggle approval requirement (Admin only)
 
 **What I can detect:**
 🔒 Cloudflare protection
@@ -99,6 +100,7 @@ Developed by **Skittle** | Credits to **SigmaX**
         # Admin handlers
         app.add_handler(CommandHandler("approve", self.admin_handlers.approve_user))
         app.add_handler(CommandHandler("groupuse", self.admin_handlers.group_use))
+        app.add_handler(CommandHandler("auth", self.admin_handlers.auth_toggle))
         app.add_handler(CommandHandler("stats", self.admin_handlers.admin_stats))
         
         # Error handler

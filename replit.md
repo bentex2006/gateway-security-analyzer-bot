@@ -104,6 +104,11 @@ Changelog:
   * Payment gateway detection: Enhanced with script/form checking and FontAwesome exclusion
   * All detections now show only existing systems rather than every possible match
   * Added Shopify detection: Now detects Shopify stores as both CMS and payment gateway
+- July 02, 2025: Added /auth toggle command for flexible approval system:
+  * Admins can now use /auth on/off to toggle approval requirements
+  * When auth is disabled, all users can use the bot without approval
+  * When auth is enabled, users must be approved by admins
+  * System maintains backward compatibility with existing approval database
 ```
 
 ## User Preferences

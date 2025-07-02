@@ -135,6 +135,62 @@ class AdminHandlers:
         
         logger.info(f"Admin {user.id} set group usage to {enabled} for chat {chat.id}")
     
+    async def auth_toggle(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle /auth command to toggle approval requirement"""
+        user = update.effective_user
+        
+        # Check if user is admin
+        if not self.is_admin(user.id):
+            await update.message.reply_text(
+                "❌ Access denied. This command is only available to admins.",
+                parse_mode=ParseMode.MARKDOWN
+            )
+            return
+        
+        # Check if argument provided
+        if not context.args:
+            current_status = "enabled" if self.db.is_auth_required() else "disabled"
+            await update.message.reply_text(
+                f"**🔐 Current Auth Status**: {current_status}\n\n"
+                "**Usage**: `/auth on|off`\n\n"
+                "**Examples**:\n"
+                "• `/auth on` - Require user approval\n"
+                "• `/auth off` - Allow all users",
+                parse_mode=ParseMode.MARKDOWN
+            )
+            return
+        
+        # Parse argument
+        arg = context.args[0].lower()
+        
+        if arg in ['on', 'yes', 'enable', 'enabled', '1', 'true']:
+            required = True
+        elif arg in ['off', 'no', 'disable', 'disabled', '0', 'false']:
+            required = False
+        else:
+            await update.message.reply_text(
+                "❌ Invalid argument. Use `on` or `off`.\n\n"
+                "**Examples**:\n"
+                "• `/auth on`\n"
+                "• `/auth off`",
+                parse_mode=ParseMode.MARKDOWN
+            )
+            return
+        
+        # Update auth requirement
+        self.db.set_auth_required(required)
+        
+        # Send confirmation
+        status = "**enabled**" if required else "**disabled**"
+        await update.message.reply_text(
+            f"✅ **Auth System Updated**\n\n"
+            f"🔐 **User approval is now {status}**\n\n"
+            f"{'Users must be approved to use the bot.' if required else 'All users can use the bot without approval.'}",
+            parse_mode=ParseMode.MARKDOWN
+        )
+        
+        logger.info(f"Admin {user.id} set auth requirement to {required}")
+    
     async def admin_stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /stats command (admin only)"""
         user = update.effective_user

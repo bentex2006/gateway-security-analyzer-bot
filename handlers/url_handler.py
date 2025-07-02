@@ -35,8 +35,10 @@ class URLHandler:
         if user_id in self.config.ADMIN_IDS:
             return True
         
-        # Private chat - require user approval
+        # Private chat - check if auth is required
         if chat_type == 'private':
+            if not self.db.is_auth_required():
+                return True  # Auth disabled, allow all users
             return self.db.is_user_approved(user_id)
         
         # Group chat - check group usage settings
