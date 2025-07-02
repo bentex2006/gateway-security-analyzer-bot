@@ -103,7 +103,8 @@ class Config:
         "Sezzle": r"sezzle\.com",
         "Affirm": r"affirm\.com",
         "Zip": r"zip\.co",
-        "Revolut": r"revolut\.com"
+        "Revolut": r"revolut\.com",
+        "Shopify": r"shopify\.com|shopify|cdn\.shopify\.com|shop\.js|shopify-pay"
     }
     
     # Security headers to check (expanded)

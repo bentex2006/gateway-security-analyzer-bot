@@ -103,6 +103,7 @@ Changelog:
   * WooCommerce detection: Focuses on scripts and specific CSS classes for accuracy
   * Payment gateway detection: Enhanced with script/form checking and FontAwesome exclusion
   * All detections now show only existing systems rather than every possible match
+  * Added Shopify detection: Now detects Shopify stores as both CMS and payment gateway
 ```
 
 ## User Preferences
