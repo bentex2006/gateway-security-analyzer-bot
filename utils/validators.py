@@ -1,20 +1,13 @@
-"""
-URL validation and utility functions
-"""
-
 import re
 from urllib.parse import urlparse
 from typing import Tuple, Optional
 
 class URLValidator:
-    """Validates and normalizes URLs"""
+    
     
     @staticmethod
     def validate_and_normalize_url(url: str) -> Tuple[bool, Optional[str], Optional[str]]:
-        """
-        Validate and normalize a URL
-        Returns: (is_valid, normalized_url, error_message)
-        """
+
         
         if not url or not isinstance(url, str):
             return False, None, "URL is required"
@@ -67,12 +60,12 @@ class URLValidator:
         try:
             parsed = urlparse(url)
             return parsed.netloc.split(':')[0]  # Remove port if present
-        except:
+        except (ValueError, AttributeError, IndexError):
             return None
     
     @staticmethod
     def is_valid_domain(domain: str) -> bool:
-        """Check if domain format is valid"""
+        
         if not domain:
             return False
         

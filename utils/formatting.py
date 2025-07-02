@@ -1,17 +1,11 @@
-"""
-Message formatting utilities for the Telegram bot
-"""
-
 import time
 from typing import Dict, Any
 
 class MessageFormatter:
-    """Formats analysis results into readable Telegram messages"""
-    
+
     @staticmethod
     def format_main_result(analysis_results: Dict[str, Any], url: str, username: str, start_time: float) -> str:
-        """Format the main analysis result message"""
-        
+
         # Calculate processing time
         processing_time = round(time.time() - start_time, 2)
         
@@ -75,7 +69,7 @@ class MessageFormatter:
     
     @staticmethod
     def _format_gateways(payment_data: Dict[str, Any]) -> str:
-        """Format detected payment gateways"""
+        
         if not payment_data or not payment_data.get('payment_systems'):
             return "❌ None Detected"
         
@@ -92,7 +86,7 @@ class MessageFormatter:
     
     @staticmethod
     def _format_captcha(captcha_data: Dict[str, Any]) -> str:
-        """Format CAPTCHA detection results"""
+        
         if not captcha_data or not captcha_data.get('detected'):
             return "❌ Not Protected"
         
@@ -104,7 +98,7 @@ class MessageFormatter:
     
     @staticmethod
     def _format_cloudflare(cloudflare_data: Dict[str, Any]) -> str:
-        """Format Cloudflare detection results"""
+       
         if not cloudflare_data or not cloudflare_data.get('detected'):
             return "❌ Not Protected"
         
@@ -112,7 +106,7 @@ class MessageFormatter:
     
     @staticmethod
     def _format_checkout(payment_data: Dict[str, Any]) -> str:
-        """Format checkout process detection"""
+        
         if not payment_data:
             return "❌ Not Available"
         
@@ -130,7 +124,7 @@ class MessageFormatter:
     
     @staticmethod
     def _format_cards(payment_data: Dict[str, Any]) -> str:
-        """Format card detection results"""
+        
         if not payment_data:
             return "❌ None Detected"
         
@@ -157,7 +151,7 @@ class MessageFormatter:
     
     @staticmethod
     def format_error_message(error: str) -> str:
-        """Format error message"""
+
         return f"""❌ **Analysis Failed**
 
 🚫 **Error**: {error}
@@ -174,7 +168,7 @@ Developed by **Skittle** | Credits to **SigmaX**"""
     
     @staticmethod
     def format_permission_denied() -> str:
-        """Format permission denied message"""
+        
         return """🔒 **Access Denied**
 
 You don't have permission to use this bot.
@@ -185,19 +179,19 @@ Developed by **Skittle** | Credits to **SigmaX**"""
     
     @staticmethod
     def format_approval_success(user_id: int) -> str:
-        """Format user approval success message"""
+        
         return f"✅ User `{user_id}` has been approved to use the bot."
     
     @staticmethod
     def format_group_usage_update(enabled: bool) -> str:
-        """Format group usage update message"""
+        
         status = "enabled" if enabled else "disabled"
         emoji = "✅" if enabled else "❌"
         return f"{emoji} Group usage has been {status}."
     
     @staticmethod
     def _escape_markdown(text: str) -> str:
-        """Escape special characters that might break Telegram message parsing"""
+        
         if not text or text == "Unknown":
             return text
         
