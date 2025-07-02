@@ -89,6 +89,14 @@ Changelog:
   * Improved GraphQL detection to avoid false matches from generic HTML content
   * Updated payment gateway detection to use regex patterns from reference script
   * Eliminated payment system false positives (Square/Stripe/PayPal from CSS/FontAwesome)
+- July 02, 2025: Comprehensive detection expansion based on professional security analysis patterns:
+  * Expanded GraphQL paths: Added /graphiql, /graphql/playground, /gql, /_graphql and 6 more variants
+  * Enhanced CAPTCHA detection: Added Arkose Labs, FunCaptcha, DataDome, PerimeterX and 4 more systems
+  * Extended WordPress indicators: Added wp-login, xmlrpc.php, wp-cron and 5 more endpoints
+  * Payment gateways expansion: Added 9 additional providers (Mollie, Alipay, Afterpay, Revolut, etc.)
+  * Security headers upgrade: Added 6 modern headers (Cross-Origin policies, Expect-CT)
+  * CDN detection enhancement: Added AWS CloudFront, Cloudflare APO headers
+  * WAF detection: Added Sucuri, Akamai, FireEye, StackPath and 4 more WAF indicators
 ```
 
 ## User Preferences
