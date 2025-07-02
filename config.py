@@ -3,10 +3,10 @@ import os
 class Config:
     
     # Bot token from environment or hardcoded fallback
-    BOT_TOKEN = os.getenv("BOT_TOKEN", "7993523214:AAE9n49ZyssohfTf70WRrvov9f-pZQ0166Y")
+    BOT_TOKEN = os.getenv("BOT_TOKEN")
     
     # Admin user IDs
-    ADMIN_IDS = [7581739321, 6496521179]
+    ADMIN_IDS = [int(x.strip()) for x in os.getenv("ADMIN_IDS", "").split(",") if x.strip()]
     
     # GIF URLs for different states
     START_GIF = "https://c.tenor.com/OF2oQX_PQ9UAAAAC/tenor.gif"
