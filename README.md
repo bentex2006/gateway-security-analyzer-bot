@@ -2,7 +2,7 @@
 
 A comprehensive Telegram bot for website security and technology analysis. This bot analyzes websites for various security features, payment systems, technology stacks, and security configurations.
 
-[![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)](https://www.python.org/)
+![Banner](banner.png)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Telegram](https://img.shields.io/badge/Telegram-Bot-blue.svg)](https://telegram.org/)
 
@@ -56,7 +56,7 @@ A comprehensive Telegram bot for website security and technology analysis. This 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/gateway-security-analyzer-bot.git
+   git clone https://github.com/bentex2006/gateway-security-analyzer-bot.git
    cd gateway-security-analyzer-bot
    ```
 
@@ -117,7 +117,7 @@ A comprehensive Telegram bot for website security and technology analysis. This 
 
 2. **Clone and setup**
    ```bash
-   git clone https://github.com/yourusername/gateway-security-analyzer-bot.git
+   git clone https://github.com/bentex2006/gateway-security-analyzer-bot.git
    cd gateway-security-analyzer-bot
    pip install -r requirements.txt
    ```
@@ -267,8 +267,8 @@ The authors are not responsible for any misuse of this tool or any damages that 
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/gateway-security-analyzer-bot/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/gateway-security-analyzer-bot/discussions)
+- **Issues**: [GitHub Issues](https://github.com/bentex2006/gateway-security-analyzer-bot/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/bentex2006/gateway-security-analyzer-bot/discussions)
 - **Documentation**: This README and inline code comments
 
 ## 🔄 Changelog
